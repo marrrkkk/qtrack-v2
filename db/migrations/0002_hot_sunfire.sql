@@ -1,0 +1,1 @@
+ALTER TABLE "attendance" ADD COLUMN "qr_code" text;
