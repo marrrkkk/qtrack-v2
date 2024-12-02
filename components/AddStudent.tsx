@@ -20,9 +20,10 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react'
 
 interface AddStudentProps {
   classId: number;
+  currentUserEmail: string;
 }
 
-export default function AddStudent({ classId }: AddStudentProps) {
+export default function AddStudent({ classId, currentUserEmail }: AddStudentProps) {
   const [email, setEmail] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -36,7 +37,7 @@ export default function AddStudent({ classId }: AddStudentProps) {
     setErrorMessage('')
 
     try {
-      await AddStudentToClass(email, classId)
+      await AddStudentToClass(email, classId, currentUserEmail)
       setSuccessMessage('Student added successfully.')
       setEmail('')
       setTimeout(() => {
@@ -44,7 +45,19 @@ export default function AddStudent({ classId }: AddStudentProps) {
         setSuccessMessage('')
       }, 2000) // Close dialog after 2 seconds on success
     } catch (err) {
-      setErrorMessage('Failed to add student. Please try again.')
+      if (err instanceof Error) {
+        if (err.message === "Student email not found in the database") {
+          setErrorMessage('Student email not found. Please check the email and try again.')
+        } else if (err.message === "Student is already added to the class") {
+          setErrorMessage('This student is already in the class.')
+        } else if (err.message === "You cannot add yourself as a student") {
+          setErrorMessage('You cannot add yourself as a student.')
+        } else {
+          setErrorMessage('Failed to add student. Please try again.')
+        }
+      } else {
+        setErrorMessage('An unexpected error occurred. Please try again.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -105,3 +118,4 @@ export default function AddStudent({ classId }: AddStudentProps) {
     </Dialog>
   )
 }
+

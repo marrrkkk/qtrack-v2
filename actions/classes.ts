@@ -1,7 +1,7 @@
 "use server";
 
 import { db, classes, attendance } from "@/db";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
@@ -14,15 +14,13 @@ export const AddNewClass = async (formdata: FormData) => {
     const room = formdata.get("room") as string;
     const schedule = formdata.get("schedule") as string;
 
-    await db
-      .insert(classes)
-      .values({
-        teacherName: teacherName,
-        teacherId: teacherId,
-        subject: subject,
-        room: room,
-        schedule: schedule,
-      });
+    await db.insert(classes).values({
+      teacherName: teacherName,
+      teacherId: teacherId,
+      subject: subject,
+      room: room,
+      schedule: schedule,
+    });
 
     revalidatePath("/dashboard/classes");
   } catch (error) {
@@ -90,9 +88,16 @@ export const DeleteClass = async (classId: number) => {
   }
 };
 
-
-export const AddStudentToClass = async (email: string, classId: number) => {
+export const AddStudentToClass = async (
+  email: string,
+  classId: number,
+  currentUserEmail: string
+) => {
   try {
+    if (email === currentUserEmail) {
+      throw new Error("You cannot add yourself as a student");
+    }
+
     const users = (await (await clerkClient()).users.getUserList()).data;
     const userExists = users.some((user) =>
       user.emailAddresses.some(
@@ -101,7 +106,7 @@ export const AddStudentToClass = async (email: string, classId: number) => {
     );
 
     if (!userExists) {
-      throw new Error("User not found");
+      throw new Error("Student email not found in the database");
     }
 
     const classData = await db
@@ -113,7 +118,7 @@ export const AddStudentToClass = async (email: string, classId: number) => {
       const currentStudents = currentClass.students || [];
 
       if (currentStudents.includes(email)) {
-        throw new Error("User is already added to the class");
+        throw new Error("Student is already added to the class");
       }
 
       const updatedStudents = [...(currentClass.students || []), email];
@@ -122,12 +127,15 @@ export const AddStudentToClass = async (email: string, classId: number) => {
         .update(classes)
         .set({ students: updatedStudents })
         .where(eq(classes.id, classId));
-      console.log("Submitted!");
+      console.log("Student added successfully!");
+    } else {
+      throw new Error("Class not found");
     }
 
     revalidatePath(`/dashboard/classes/${classId}`);
   } catch (error) {
     console.error(error);
+    throw error; // Re-throw the error to be caught in the component
   }
 };
 
@@ -258,12 +266,17 @@ export const getAttendanceHistory = async (classId: number) => {
   }
 };
 
-export const getAttendanceDetails = async (classId: number, attendanceId: number) => {
+export const getAttendanceDetails = async (
+  classId: number,
+  attendanceId: number
+) => {
   try {
     const attendanceDetails = await db
       .select()
       .from(attendance)
-      .where(and(eq(attendance.classId, classId), eq(attendance.id, attendanceId)))
+      .where(
+        and(eq(attendance.classId, classId), eq(attendance.id, attendanceId))
+      )
       .limit(1);
 
     if (attendanceDetails.length === 0) {
@@ -276,3 +289,33 @@ export const getAttendanceDetails = async (classId: number, attendanceId: number
     return null;
   }
 };
+
+export async function getTodayClasses(userId: string) {
+  const today = new Date().toISOString().split('T')[0];
+  const todayClasses = await db
+    .select({
+      id: classes.id,
+      teacherName: classes.teacherName,
+      teacherId: classes.teacherId,
+      subject: classes.subject,
+      room: classes.room,
+      schedule: classes.schedule,
+      students: classes.students,
+      createdAt: classes.createdAt,
+      isActive: sql<boolean>`EXISTS (
+        SELECT 1 FROM ${attendance} 
+        WHERE ${attendance.classId} = ${classes.id} 
+        AND ${attendance.isActive} = true
+        ORDER BY ${attendance.createdAt} DESC
+        LIMIT 1
+      )`
+    })
+    .from(classes)
+    .where(and(
+      eq(classes.teacherId, userId),
+      sql`DATE(${classes.createdAt}) = ${today}`
+    ))
+    .groupBy(classes.id);
+
+  return todayClasses;
+}

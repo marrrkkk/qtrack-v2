@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,37 +19,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useUser } from "@clerk/nextjs";
-import { createUser } from '@/actions/user';
+import { createUser } from "@/actions/user";
 
 export default function RoleSelectionPage() {
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { user } = useUser();
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!role || !user) return;
-    
+
     try {
       setIsSubmitting(true);
-      
-      const result = await createUser(
-        user.fullName || '',
-        role
-      );
 
-      if(!result) return
+      const result = await createUser(role);
 
-      if (result.success) {
+      if (result?.success) {
         // Redirect based on role
-        router.push(role === 'student' ? '/dashboard/student' : '/dashboard/teacher');
+        router.push(
+          role === "student" ? "/dashboard/student" : "/dashboard/teacher"
+        );
       } else {
-        console.error('Failed to create user:', result.error);
+        console.error("Failed to create user:", result?.error);
       }
     } catch (error) {
-      console.error('Error in form submission:', error);
+      console.error("Error in form submission:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -68,10 +65,10 @@ export default function RoleSelectionPage() {
           <form className="grid gap-4" onSubmit={handleSubmit}>
             <div className="grid gap-2">
               <Label htmlFor="role">Select Role</Label>
-              <Select 
-                name="role" 
+              <Select
+                name="role"
                 required
-                onValueChange={value => setRole(value)}
+                onValueChange={(value) => setRole(value)}
                 value={role}
               >
                 <SelectTrigger id="role">
@@ -83,12 +80,12 @@ export default function RoleSelectionPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full"
               disabled={isSubmitting || !role}
             >
-              {isSubmitting ? 'Saving...' : 'Continue'}
+              {isSubmitting ? "Saving..." : "Continue"}
             </Button>
           </form>
         </CardContent>
@@ -96,3 +93,4 @@ export default function RoleSelectionPage() {
     </div>
   );
 }
+

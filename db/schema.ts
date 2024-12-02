@@ -15,9 +15,9 @@ export const classes = pgTable("classes", {
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  email: text("email").notNull(),
   role: text("role").notNull(),
   avatarUrl: text("avatar_url"),
-  bio: text("bio"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 

@@ -170,5 +170,4 @@ const CreateAttendance = ({
     </Card>
   )
 }
-
 export default CreateAttendance
