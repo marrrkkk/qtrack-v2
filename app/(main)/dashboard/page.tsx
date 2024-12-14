@@ -3,8 +3,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import { getTodayClasses } from "@/actions/classes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, Users, MapPin, BookOpen } from 'lucide-react';
+import { CalendarDays, Users, MapPin, BookOpen, ChevronRight } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 const Dashboard = async () => {
   const user = await currentUser();
@@ -17,7 +18,7 @@ const Dashboard = async () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -60,38 +61,43 @@ const Dashboard = async () => {
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {classesWithAvatars.map((cls) => (
-                  <Card key={cls.id} className="bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12 ring-2 ring-primary">
-                          <AvatarImage src={cls.avatar} alt={cls.teacherName} />
-                          <AvatarFallback>{cls.subject[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-bold text-xl text-gray-900 dark:text-white">{cls.subject}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{cls.teacherName}</p>
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-2">
-                      <div className="grid gap-3">
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                          <MapPin className="mr-2 h-4 w-4 text-primary" />
-                          Room: {cls.room}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                          <CalendarDays className="mr-2 h-4 w-4 text-primary" />
-                          {cls.schedule}
-                        </div>
-                        {cls.students && (
-                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                            <Users className="mr-2 h-4 w-4 text-primary" />
-                            <Badge variant="secondary">{cls.students.length} students</Badge>
+                  <Link href={`/dashboard/classes/${cls.id}`} key={cls.id} className="block">
+                    <Card className="bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center gap-4">
+                          <Avatar className="h-12 w-12 ring-2 ring-primary">
+                            <AvatarImage src={cls.avatar} alt={cls.teacherName} />
+                            <AvatarFallback>{cls.subject[0]}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-bold text-xl text-gray-900 dark:text-white">{cls.subject}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{cls.teacherName}</p>
                           </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="grid gap-3">
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                            <MapPin className="mr-2 h-4 w-4 text-primary" />
+                            Room: {cls.room}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                            <CalendarDays className="mr-2 h-4 w-4 text-primary" />
+                            {cls.schedule}
+                          </div>
+                          {cls.students && (
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                              <Users className="mr-2 h-4 w-4 text-primary" />
+                              <Badge variant="secondary">{cls.students.length} students</Badge>
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                          <ChevronRight className="h-5 w-5 text-primary" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}

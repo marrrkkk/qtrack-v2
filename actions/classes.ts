@@ -13,13 +13,17 @@ export const AddNewClass = async (formdata: FormData) => {
     const subject = formdata.get("subject") as string;
     const room = formdata.get("room") as string;
     const schedule = formdata.get("schedule") as string;
+    const startDate = new Date(formdata.get("startDate") as string);
+    const endDate = new Date(formdata.get("endDate") as string);
 
     await db.insert(classes).values({
-      teacherName: teacherName,
-      teacherId: teacherId,
-      subject: subject,
-      room: room,
-      schedule: schedule,
+      teacherName,
+      teacherId,
+      subject,
+      room,
+      schedule,
+      startDate,
+      endDate,
     });
 
     revalidatePath("/dashboard/classes");
@@ -318,4 +322,22 @@ export async function getTodayClasses(userId: string) {
     .groupBy(classes.id);
 
   return todayClasses;
+}
+
+export async function getAllClasses(userId: string) {
+  return await db
+    .select({
+      id: classes.id,
+      teacherName: classes.teacherName,
+      teacherId: classes.teacherId,
+      subject: classes.subject,
+      room: classes.room,
+      schedule: classes.schedule,
+      students: classes.students,
+      startDate: classes.startDate,
+      endDate: classes.endDate,
+      createdAt: classes.createdAt,
+    })
+    .from(classes)
+    .where(eq(classes.teacherId, userId));
 }

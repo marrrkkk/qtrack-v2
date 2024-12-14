@@ -7,7 +7,9 @@ export const classes = pgTable("classes", {
   teacherId: text("teacher_id").notNull(),  // Unique ID of the teacher
   subject: text("subject").notNull(),       // The subject being taught
   room: text("room").notNull(),             // Room where the class takes place
-  schedule: text("schedule").notNull(),    // Class schedule stored as JSON (e.g., days and times)
+  schedule: text("schedule").notNull(),  
+  startDate: timestamp("start_date").notNull(),  // Add this
+  endDate: timestamp("end_date").notNull(),  // Class schedule stored as JSON (e.g., days and times)
   students: jsonb("students").$type<string[]>(),    // List of students in the class (e.g., as an array of IDs or names)
   createdAt: timestamp("created_at").defaultNow().notNull(), // Timestamp for when the class was created
 });
