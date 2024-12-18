@@ -4,6 +4,7 @@ import { db, classes, attendance } from "@/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { getUsersByEmails } from '@/actions/user'
 
 export const AddNewClass = async (formdata: FormData) => {
   try {
@@ -67,6 +68,8 @@ export const EditClass = async (classId: number, formdata: FormData) => {
     const subject = formdata.get("subject") as string;
     const room = formdata.get("room") as string;
     const schedule = formdata.get("schedule") as string;
+    const startDate = formdata.get("startDate") as string;
+    const endDate = formdata.get("endDate") as string;
 
     await db
       .update(classes)
@@ -74,6 +77,8 @@ export const EditClass = async (classId: number, formdata: FormData) => {
         subject,
         room,
         schedule,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
       })
       .where(eq(classes.id, classId));
 
@@ -341,3 +346,26 @@ export async function getAllClasses(userId: string) {
     .from(classes)
     .where(eq(classes.teacherId, userId));
 }
+
+export async function generateAttendanceCSV(attendanceDetails: any) {
+  const emails = attendanceDetails.attendanceList?.map((student: any) => student.email) || []
+  const userDetails = await getUsersByEmails(emails)
+
+  const csvRows = [
+    ['Name', 'Email', 'Status', 'Date']
+  ]
+
+  attendanceDetails.attendanceList?.forEach((student: any) => {
+    csvRows.push([
+      userDetails[student.email]?.name || 'Unknown',
+      student.email,
+      student.present ? 'Present' : 'Absent',
+      new Date(attendanceDetails.createdAt).toLocaleString()
+    ])
+  })
+
+  const csvContent = csvRows.map(row => row.join(',')).join('\n')
+  return csvContent
+}
+
+

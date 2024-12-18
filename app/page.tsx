@@ -18,12 +18,16 @@ export default function Home() {
           </p>
           <div className="mt-10 flex justify-center gap-4">
             <SignedOut>
-              <Button size="lg">
-                <SignUpButton>Get Started</SignUpButton>
-              </Button>
-              <Button size="lg" variant="outline">
-                <SignInButton>Log In</SignInButton>
-              </Button>
+              <SignUpButton>
+                <Button size="lg" asChild>
+                  Get Started
+                </Button>
+              </SignUpButton>
+              <SignInButton>
+                <Button size="lg" variant="outline" asChild>
+                  Log In
+                </Button>
+              </SignInButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">

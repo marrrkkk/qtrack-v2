@@ -75,6 +75,8 @@ interface SerializedClassData {
   schedule: string;
   students: string[] | null;
   createdAt: string;
+  startDate: string;
+  endDate: string;
 }
 
 interface AttendanceRecord {
@@ -261,6 +263,30 @@ export default function ClientClassPage({
                           ))}
                         </PopoverContent>
                       </Popover>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="startDate" className="text-right">
+                        Start Date
+                      </Label>
+                      <Input
+                        id="startDate"
+                        name="startDate"
+                        type="date"
+                        defaultValue={classData.startDate}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="endDate" className="text-right">
+                        End Date
+                      </Label>
+                      <Input
+                        id="endDate"
+                        name="endDate"
+                        type="date"
+                        defaultValue={classData.endDate}
+                        className="col-span-3"
+                      />
                     </div>
                   </div>
                   <DialogFooter>

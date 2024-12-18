@@ -3,9 +3,18 @@ import { currentUser } from "@clerk/nextjs/server";
 import { getTodayClasses } from "@/actions/classes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, Users, MapPin, BookOpen, ChevronRight } from 'lucide-react';
+import { CalendarDays, Users, MapPin, BookOpen, ChevronRight, Bell } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Dashboard = async () => {
   const user = await currentUser();
@@ -23,9 +32,22 @@ const Dashboard = async () => {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <BookOpen className="h-8 w-8 text-primary" />
-              <h1 className="ml-2 text-2xl font-bold text-gray-900 dark:text-white">EduDash</h1>
+              <h1 className="ml-2 text-2xl font-bold text-gray-900 dark:text-white">Qtrack</h1>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Bell className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>New assignment added</DropdownMenuItem>
+                  <DropdownMenuItem>Class schedule updated</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <SignedIn>
                 <UserButton 
                   afterSignOutUrl="/"
@@ -61,16 +83,16 @@ const Dashboard = async () => {
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {classesWithAvatars.map((cls) => (
-                  <Link href={`/dashboard/classes/${cls.id}`} key={cls.id} className="block">
-                    <Card className="bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <Link href={`/dashboard/classes/${cls.id}`} key={cls.id} className="block group">
+                    <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                       <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-4">
-                          <Avatar className="h-12 w-12 ring-2 ring-primary">
+                          <Avatar className="h-12 w-12 ring-2 ring-primary transition-all duration-300 group-hover:ring-4">
                             <AvatarImage src={cls.avatar} alt={cls.teacherName} />
                             <AvatarFallback>{cls.subject[0]}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <h3 className="font-bold text-xl text-gray-900 dark:text-white">{cls.subject}</h3>
+                            <h3 className="font-bold text-xl text-gray-900 dark:text-white group-hover:text-primary transition-colors duration-300">{cls.subject}</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{cls.teacherName}</p>
                           </div>
                         </CardTitle>
@@ -88,12 +110,14 @@ const Dashboard = async () => {
                           {cls.students && (
                             <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                               <Users className="mr-2 h-4 w-4 text-primary" />
-                              <Badge variant="secondary">{cls.students.length} students</Badge>
+                              <Badge variant="secondary" className="transition-all duration-300 group-hover:bg-primary group-hover:text-white">
+                                {cls.students.length} students
+                              </Badge>
                             </div>
                           )}
                         </div>
                         <div className="mt-4 flex justify-end">
-                          <ChevronRight className="h-5 w-5 text-primary" />
+                          <ChevronRight className="h-5 w-5 text-primary transition-transform duration-300 group-hover:translate-x-1" />
                         </div>
                       </CardContent>
                     </Card>
@@ -109,4 +133,3 @@ const Dashboard = async () => {
 };
 
 export default Dashboard;
-

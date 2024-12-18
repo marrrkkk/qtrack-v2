@@ -11,18 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useUser } from "@clerk/nextjs";
 import { createUser } from "@/actions/user";
 
-export default function RoleSelectionPage() {
-  const [role, setRole] = useState("");
+export default function SetupPage() {
+  const [fullName, setFullName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { user } = useUser();
@@ -30,18 +24,14 @@ export default function RoleSelectionPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!role || !user) return;
+    if (!fullName || !user) return;
 
     try {
       setIsSubmitting(true);
-
-      const result = await createUser(role);
+      const result = await createUser(fullName);
 
       if (result?.success) {
-        // Redirect based on role
-        router.push(
-          role === "student" ? "/dashboard/student" : "/dashboard/teacher"
-        );
+        router.push("/dashboard");
       } else {
         console.error("Failed to create user:", result?.error);
       }
@@ -58,32 +48,26 @@ export default function RoleSelectionPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
           <CardDescription>
-            Select your role to complete your account setup
+            Please enter your full name to complete your account setup
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={handleSubmit}>
             <div className="grid gap-2">
-              <Label htmlFor="role">Select Role</Label>
-              <Select
-                name="role"
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                type="text"
                 required
-                onValueChange={(value) => setRole(value)}
-                value={role}
-              >
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="teacher">Teacher</SelectItem>
-                </SelectContent>
-              </Select>
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your full name"
+              />
             </div>
             <Button
               type="submit"
               className="w-full"
-              disabled={isSubmitting || !role}
+              disabled={isSubmitting || !fullName}
             >
               {isSubmitting ? "Saving..." : "Continue"}
             </Button>

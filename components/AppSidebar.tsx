@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, Calendar, Settings, Plus } from 'lucide-react'
+import { Home, BookOpen, Calendar, TrendingUp, Plus } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import CreateClass from "@/components/CreateClass"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ const navItems = [
   { icon: Home, label: "Home", href: "/dashboard" },
   { icon: BookOpen, label: "Classes", href: "/dashboard/classes" },
   { icon: Calendar, label: "Schedule", href: "/dashboard/schedule" },
-  { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+  { icon: TrendingUp, label: "Analytics", href: "/dashboard/analytics" },
 ]
 
 export function AppSidebar() {
