@@ -350,52 +350,61 @@ export default function ClientClassPage({
             >
               <Card className="bg-card/50 backdrop-blur-sm border-none shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold flex items-center">
-                    <QrCode className="mr-2 h-6 w-6 text-primary" />
-                    Attendance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-6 mb-6">
-                    <div className="flex items-center space-x-4 bg-muted p-4 rounded-lg">
-                      <Avatar className="w-16 h-16 ring-2 ring-primary">
-                        <AvatarImage src={teacherData?.avatarUrl || "/placeholder-avatar.jpg"} alt="Teacher" />
-                        <AvatarFallback>{teacherData?.name?.[0] || classData.teacherName[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h2 className="text-xl font-semibold">
-                          {classData.subject}
-                        </h2>
-                        <p className="text-muted-foreground">
-                          Teacher: {teacherData?.name || classData.teacherName}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center space-x-2 bg-muted p-3 rounded-lg">
-                        <MapPin className="h-5 w-5 text-primary" />
-                        <span>Room: {classData.room}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 bg-muted p-3 rounded-lg">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        <span>Schedule: {classData.schedule}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 bg-muted p-3 rounded-lg">
-                        <BookOpen className="h-5 w-5 text-primary" />
-                        <span>Students: {classData.students?.length || 0}</span>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-muted rounded-lg flex justify-between items-center">
-                      <div className="space-x-2">
-                        {latestAttendance?.isActive && (
-                          <>
-                            <Badge variant="default" className="bg-primary text-primary-foreground">Present: {presentCount}</Badge>
-                            <Badge variant="destructive">Absent: {absentCount}</Badge>
-                          </>
-                        )}
-                      </div>
+                  <div className="flex items-center gap-4 bg-muted p-4 rounded-lg">
+                    <Avatar className="w-16 h-16 ring-2 ring-primary">
+                      <AvatarImage src={teacherData?.avatarUrl || "/placeholder-avatar.jpg"} alt="Teacher" />
+                      <AvatarFallback>{teacherData?.name?.[0] || classData.teacherName[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h2 className="text-xl font-semibold">
+                        {teacherData?.name || classData.teacherName}
+                      </h2>
+                      <p className="text-muted-foreground">Teacher</p>
                     </div>
                   </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="bg-primary/5 border-none">
+                      <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                        <MapPin className="h-5 w-5 text-primary mb-2" />
+                        <p className="text-sm font-medium">Room {classData.room}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-primary/5 border-none">
+                      <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                        <Calendar className="h-5 w-5 text-primary mb-2" />
+                        <p className="text-sm font-medium">{classData.schedule}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-primary/5 border-none">
+                      <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                        <Users className="h-5 w-5 text-primary mb-2" />
+                        <p className="text-sm font-medium">{classData.students?.length || 0} Students</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-primary/5 border-none">
+                      <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                        <BookOpen className="h-5 w-5 text-primary mb-2" />
+                        <p className="text-sm font-medium">{classData.subject}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {latestAttendance?.isActive && (
+                    <div className="bg-muted p-4 rounded-lg space-y-2">
+                      <h3 className="font-semibold">Current Attendance</h3>
+                      <div className="flex gap-3">
+                        <Badge variant="default" className="bg-primary text-primary-foreground">
+                          Present: {presentCount}
+                        </Badge>
+                        <Badge variant="destructive">
+                          Absent: {absentCount}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+
                   <CreateAttendance
                     userId={user.id}
                     teacherId={classData.teacherId}

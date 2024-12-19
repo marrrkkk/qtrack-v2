@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from "@clerk/nextjs"
-import { DayPicker } from 'react-day-picker'
+import { format } from 'date-fns'
 import { Card, CardContent } from "@/components/ui/card"
-import { CalendarIcon, Users, MapPin } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { CalendarIcon, Users, MapPin, BookOpen, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react'
 import { getAllClasses } from "@/actions/classes"
 import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 interface Class {
   id: number
@@ -25,7 +29,7 @@ interface Class {
 function ClassSchedule() {
   const { user } = useUser()
   const [classes, setClasses] = useState<Class[]>([])
-  const [selectedDay, setSelectedDay] = useState<Date>()
+  const [selectedDay, setSelectedDay] = useState<Date>(new Date())
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -42,9 +46,35 @@ function ClassSchedule() {
   }, [user])
 
   const getClassesForDay = (day: Date) => {
+    const dayName = day.toLocaleDateString('en-US', { weekday: 'long' })
+    
+    console.log('Current day info:', {
+      fullDate: day,
+      dayName,
+      formattedDate: day.toLocaleDateString(),
+      isoString: day.toISOString()
+    })
+
     return classes.filter(cls => {
-      const dayName = day.toLocaleDateString('en-US', { weekday: 'long' })
-      const isWithinDateRange = day >= cls.startDate && day <= cls.endDate
+      const classStartDate = new Date(cls.startDate)
+      const classEndDate = new Date(cls.endDate)
+      
+      // Reset time components for accurate date comparison
+      const compareDate = new Date(day.getFullYear(), day.getMonth(), day.getDate())
+      const startDate = new Date(classStartDate.getFullYear(), classStartDate.getMonth(), classStartDate.getDate())
+      const endDate = new Date(classEndDate.getFullYear(), classEndDate.getMonth(), classEndDate.getDate())
+      
+      const isWithinDateRange = compareDate >= startDate && compareDate <= endDate
+      console.log({
+        class: cls.subject,
+        dayName,
+        schedule: cls.schedule,
+        isWithinDateRange,
+        compareDate,
+        startDate,
+        endDate
+      })
+      
       return cls.schedule.includes(dayName) && isWithinDateRange
     })
   }
@@ -53,115 +83,128 @@ function ClassSchedule() {
     return getClassesForDay(day).length > 0
   }
 
-  const selectedDayClasses = selectedDay ? getClassesForDay(selectedDay) : []
+  const selectedDayClasses = getClassesForDay(selectedDay)
+
+  const nextDay = () => {
+    setSelectedDay(prev => {
+      const next = new Date(prev)
+      next.setDate(next.getDate() + 1)
+      return next
+    })
+  }
+
+  const prevDay = () => {
+    setSelectedDay(currentDay => {
+      const newDate = new Date(currentDay)
+      newDate.setDate(newDate.getDate() - 1)
+      return newDate
+    })
+  }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-semibold mb-8 text-center text-foreground">
-          Class Schedule
-        </h1>
-        
-        <div className="grid md:grid-cols-7 gap-8">
-          <Card className="md:col-span-3 shadow-sm">
-            <CardContent className="p-4">
-              <DayPicker
-                mode="single"
-                selected={selectedDay}
-                onSelect={setSelectedDay}
-                modifiers={{ hasClass: isDayWithClass }}
-                modifiersStyles={{
-                  hasClass: {
-                    fontWeight: 'bold',
-                    color: 'hsl(var(--primary))',
-                  }
-                }}
-                className="mx-auto"
-                classNames={{
-                  months: "flex flex-col space-y-4",
-                  month: "space-y-4",
-                  caption: "flex justify-between pt-1 relative items-center px-2",
-                  caption_label: "text-sm font-medium",
-                  nav: "space-x-1 flex items-center",
-                  nav_button: "h-7 w-7 bg-transparent p-0 opacity-70 hover:opacity-100 transition-opacity",
-                  nav_button_previous: "absolute left-1",
-                  nav_button_next: "absolute right-1",
-                  table: "w-full border-collapse space-y-1",
-                  head_row: "flex",
-                  head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-                  row: "flex w-full mt-2",
-                  cell: "text-center text-sm relative p-0 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                  day: "h-9 w-9 p-0 font-normal",
-                  day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                  day_today: "bg-accent text-accent-foreground",
-                  day_outside: "text-muted-foreground opacity-50",
-                  day_disabled: "text-muted-foreground opacity-50",
-                  day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                  day_hidden: "invisible",
-                }}
-              />
-            </CardContent>
-          </Card>
+    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 dark:from-background dark:to-background/80 pt-20 md:pt-12 pb-24 md:pb-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="mb-8 flex items-center justify-center sm:justify-start">
+          <CalendarDays className="mr-2 sm:mr-4 h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+          <h1 className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+            Class Schedule
+          </h1>
+        </div>
 
-          <Card className="md:col-span-4 shadow-sm">
-            <CardContent className="p-4">
-              <h2 className="text-lg font-medium mb-4 flex items-center">
-                <CalendarIcon className="mr-2 h-5 w-5 text-primary" />
-                {selectedDay ? (
-                  `${selectedDay.toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}`
-                ) : (
-                  "Select a date"
-                )}
-              </h2>
-              
-              {selectedDayClasses.length > 0 ? (
-                <motion.div 
-                  className="space-y-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ staggerChildren: 0.1 }}
-                >
-                  {selectedDayClasses.map((cls) => (
-                    <motion.div
-                      key={cls.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="p-3 border-l-2 border-primary bg-background hover:bg-accent/5 transition-colors">
+        <Card className="bg-white dark:bg-gray-800 shadow-lg">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex justify-between items-center mb-6">
+              <Button
+                variant="ghost"
+                onClick={prevDay}
+                className="text-primary hover:text-primary hover:bg-primary/10"
+              >
+                <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
+              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[180px] sm:w-[240px] justify-start text-left font-normal text-sm sm:text-base",
+                      !selectedDay && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    {selectedDay ? format(selectedDay, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDay}
+                    onSelect={(day) => day && setSelectedDay(day)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <Button
+                variant="ghost"
+                onClick={nextDay}
+                className="text-primary hover:text-primary hover:bg-primary/10"
+              >
+                <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
+              </Button>
+            </div>
+
+            {selectedDayClasses.length > 0 ? (
+              <motion.div 
+                className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ staggerChildren: 0.1 }}
+              >
+                {selectedDayClasses.map((cls) => (
+                  <motion.div
+                    key={cls.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                      <CardContent className="p-3 sm:p-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-medium text-base">{cls.subject}</h3>
-                            <p className="text-sm text-muted-foreground flex items-center mt-1">
+                            <h3 className="font-bold text-lg sm:text-xl text-gray-900 dark:text-white group-hover:text-primary transition-colors duration-300">{cls.subject}</h3>
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
                               <MapPin className="mr-1 h-3 w-3" /> Room {cls.room}
                             </p>
                           </div>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="secondary" className="transition-all duration-300 group-hover:bg-primary group-hover:text-white">
                             <Users className="mr-1 h-3 w-3" />
                             {cls.students?.length || 0}
                           </Badge>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              ) : (
-                <motion.p 
-                  className="text-muted-foreground text-center py-8 text-sm"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  {selectedDay ? "No classes scheduled" : "Select a date to view classes"}
-                </motion.p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                        <Button 
+                          className="w-full mt-4 bg-primary hover:bg-primary/90 text-white"
+                          size="sm"
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" /> Start Class
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div 
+                className="text-center py-8 sm:py-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <BookOpen className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-primary mb-3 sm:mb-4" />
+                <p className="text-gray-900 dark:text-white text-base sm:text-lg font-medium">No classes scheduled for today</p>
+                <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2">Enjoy your free time or prepare for upcoming classes!</p>
+              </motion.div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

@@ -12,9 +12,9 @@ const ClassesGrid = async () => {
   if (!user?.id) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <p className="text-lg text-muted-foreground bg-card shadow-lg rounded-lg p-6">
+        <div className="text-lg text-muted-foreground bg-card/50 backdrop-blur-sm shadow-lg rounded-xl p-8">
           You must be logged in to see your classes.
-        </p>
+        </div>
       </div>
     )
   }
@@ -47,18 +47,18 @@ const ClassesGrid = async () => {
             avatar: teacher.imageUrl,
           };
         } catch (error) {
-          return null; // Return null for classes with deleted teachers
+          return null;
         }
       })
     )
-  ).filter(Boolean); // Remove null values from the array
+  ).filter(Boolean);
 
   if (classData.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <p className="text-lg text-muted-foreground bg-card shadow-lg rounded-lg p-6">
-          No classes found. Start by creating or enrolling in a class!
-        </p>
+        <div className="text-lg text-muted-foreground bg-card/50 backdrop-blur-sm shadow-lg rounded-xl p-8">
+          No classes found. Start by creating or enrolling in a class! 🎓
+        </div>
       </div>
     )
   }
@@ -66,7 +66,7 @@ const ClassesGrid = async () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {(classData as NonNullable<typeof classData[0]>[]).map((_class) => (
-        <div className="flex justify-center" key={_class.id}>
+        <div key={_class.id} className="flex justify-center">
           <div className="w-full">
             <ClassCard
               id={_class.id}
@@ -97,16 +97,16 @@ const ClassesSkeletonGrid = () => {
   )
 }
 
-const Classes = () => {
+export default function Classes() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 dark:from-background dark:to-background/80 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 dark:from-background dark:to-background/80 pt-20 md:pt-12 pb-24 md:pb-12">
       <div className="container mx-auto px-4 max-w-7xl">
-        <h1 className="text-4xl font-extrabold mb-8 text-center sm:text-left flex items-center justify-center sm:justify-start">
+        <div className="mb-8 flex items-center justify-center sm:justify-start">
           <GraduationCap className="mr-4 h-10 w-10 text-primary" />
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+          <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
             My Classes
-          </span>
-        </h1>
+          </h1>
+        </div>
         <Suspense fallback={<ClassesSkeletonGrid />}>
           <ClassesGrid />
         </Suspense>
@@ -114,6 +114,4 @@ const Classes = () => {
     </div>
   )
 }
-
-export default Classes
 

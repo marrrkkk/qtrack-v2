@@ -1,7 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Clock, MapPin, BookOpen } from 'lucide-react'
+import { MapPin, Calendar, ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 interface ClassCardProps {
@@ -13,43 +12,48 @@ interface ClassCardProps {
   avatar: string
 }
 
-const ClassCard = ({ id, teacherName, subject, room, schedule, avatar }: ClassCardProps) => {
+export default function ClassCard({
+  id,
+  teacherName,
+  subject,
+  room,
+  schedule,
+  avatar,
+}: ClassCardProps) {
   return (
-    <Link href={`/dashboard/classes/${id}`} className="block h-full">
-      <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg dark:hover:shadow-primary/20 hover:-translate-y-1 h-full flex flex-col group">
-        <CardHeader className="pb-2 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <BookOpen className="absolute right-2 top-2 h-12 w-12 text-primary/10 group-hover:text-primary/20 transition-colors duration-300" />
-          <CardTitle className="text-lg font-bold flex items-start justify-between relative z-10">
-            <span className="truncate flex-grow mr-2">{subject}</span>
-            <Badge variant="secondary" className="text-xs font-normal shrink-0 shadow-sm">
-              Room {room}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-4 flex-grow flex flex-col justify-between relative">
-          <div className="flex items-center space-x-3 mb-4">
-            <Avatar className="h-10 w-10 ring-2 ring-primary/20 shrink-0 shadow-sm">
+    <Link href={`/dashboard/classes/${id}`}>
+      <Card className="group bg-card/50 backdrop-blur-sm border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-12 w-12 ring-2 ring-primary transition-all duration-300 group-hover:ring-4">
               <AvatarImage src={avatar} alt={teacherName} />
-              <AvatarFallback>{teacherName[0]}</AvatarFallback>
+              <AvatarFallback>{subject[0]}</AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium truncate">{teacherName}</span>
+            <div>
+              <h3 className="font-bold text-xl group-hover:text-primary transition-colors duration-300">
+                {subject}
+              </h3>
+              <p className="text-sm text-muted-foreground">{teacherName}</p>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground space-y-2">
-            <div className="flex items-center group/item transition-colors duration-200 hover:text-foreground">
-              <Clock className="mr-2 h-4 w-4 text-primary/70 group-hover/item:text-primary transition-colors duration-200" />
-              <span className="truncate">{schedule}</span>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4">
+          <div className="grid gap-3">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MapPin className="mr-2 h-4 w-4 text-primary" />
+              Room {room}
             </div>
-            <div className="flex items-center group/item transition-colors duration-200 hover:text-foreground">
-              <MapPin className="mr-2 h-4 w-4 text-primary/70 group-hover/item:text-primary transition-colors duration-200" />
-              <span className="truncate">Room {room}</span>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Calendar className="mr-2 h-4 w-4 text-primary" />
+              {schedule}
             </div>
+          </div>
+          <div className="flex justify-end">
+            <ChevronRight className="h-5 w-5 text-primary transition-transform duration-300 group-hover:translate-x-1" />
           </div>
         </CardContent>
       </Card>
     </Link>
   )
 }
-
-export default ClassCard
 
