@@ -96,8 +96,8 @@ export function StudentsTab({
               <CardTitle>Add Student</CardTitle>
             </CardHeader>
             <CardContent>
-              <AddStudent 
-                classId={classData.id} 
+              <AddStudent
+                classId={classData.id}
                 currentUserEmail={user.emailAddresses[0]}
               />
             </CardContent>
