@@ -86,7 +86,7 @@ export default function Home() {
                 },
                 { 
                   title: "Instant Tracking",
-                  description: "View real-time attendance data and generate reports easily.",
+                  description: "View latest attendance data and generate reports easily.",
                   icon: "📊"
                 }
               ].map((step, index) => (

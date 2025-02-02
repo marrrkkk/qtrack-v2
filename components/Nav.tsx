@@ -26,7 +26,7 @@ const Nav = () => {
                   Log in
                 </Button>
               </SignInButton>
-              <SignUpButton forceRedirectUrl={'/select-role'}>
+              <SignUpButton>
                 <Button 
                   className="rounded-xl font-medium shadow-lg hover:shadow-primary/25 transition-all"
                 >
