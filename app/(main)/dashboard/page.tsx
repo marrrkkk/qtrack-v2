@@ -1,9 +1,16 @@
 import { SignedIn, UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
-import { getTodayClasses } from "@/actions/classes";
+import { getActiveClasses } from "@/actions/classes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, Users, MapPin, BookOpen, ChevronRight, Bell } from 'lucide-react';
+import {
+  CalendarDays,
+  Users,
+  MapPin,
+  BookOpen,
+  ChevronRight,
+  Bell,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -18,13 +25,7 @@ import {
 
 const Dashboard = async () => {
   const user = await currentUser();
-  const allClasses = user ? await getTodayClasses(user.id) : [];
-  const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-
-  // Filter classes for current day
-  const todayClasses = allClasses.filter(cls => 
-    cls.schedule.includes(dayName)
-  );
+  const activeClasses = user ? await getActiveClasses(user.id) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/80 dark:from-background dark:to-background/80 pt-20 md:pt-12 pb-24 md:pb-12">
@@ -40,29 +41,42 @@ const Dashboard = async () => {
           <div className="rounded-lg">
             <h2 className="text-2xl font-semibold mb-4 flex items-center">
               <CalendarDays className="mr-2 h-6 w-6 text-primary" />
-              Today's Classes ({dayName})
+              Active Classes
             </h2>
 
-            {todayClasses.length === 0 ? (
+            {activeClasses.length === 0 ? (
               <Card className="bg-white dark:bg-gray-800 shadow-lg">
                 <CardContent className="p-6">
-                  <p className="text-gray-500 dark:text-gray-400 text-center text-lg">No classes scheduled for today</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-center text-lg">
+                    No active classes found
+                  </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {todayClasses.map((cls) => (
-                  <Link href={`/dashboard/classes/${cls.id}`} key={cls.id} className="block group">
+                {activeClasses.map((cls) => (
+                  <Link
+                    href={`/dashboard/classes/${cls.id}`}
+                    key={cls.id}
+                    className="block group"
+                  >
                     <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                       <CardHeader className="pb-2">
                         <CardTitle className="flex items-center gap-4">
                           <Avatar className="h-12 w-12 ring-2 ring-primary transition-all duration-300 group-hover:ring-4">
-                            <AvatarImage src={user?.imageUrl} alt={cls.teacherName} />
+                            <AvatarImage
+                              src={user?.imageUrl}
+                              alt={cls.teacherName}
+                            />
                             <AvatarFallback>{cls.subject[0]}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <h3 className="font-bold text-xl text-gray-900 dark:text-white group-hover:text-primary transition-colors duration-300">{cls.subject}</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{cls.teacherName}</p>
+                            <h3 className="font-bold text-xl text-gray-900 dark:text-white group-hover:text-primary transition-colors duration-300">
+                              {cls.subject}
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {cls.teacherName}
+                            </p>
                           </div>
                         </CardTitle>
                       </CardHeader>
@@ -74,7 +88,10 @@ const Dashboard = async () => {
                           </div>
                           <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                             <Users className="mr-2 h-4 w-4 text-primary" />
-                            <Badge variant="secondary" className="transition-all duration-300 group-hover:bg-primary group-hover:text-white">
+                            <Badge
+                              variant="secondary"
+                              className="transition-all duration-300 group-hover:bg-primary group-hover:text-white"
+                            >
                               {cls.students?.length || 0} students
                             </Badge>
                           </div>

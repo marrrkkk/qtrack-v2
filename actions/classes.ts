@@ -1,7 +1,7 @@
 "use server";
 
 import { db, classes, attendance } from "@/db";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql, or } from "drizzle-orm";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getUsersByEmails } from "@/actions/user";
@@ -393,5 +393,41 @@ export async function removeStudent(classId: number, studentEmail: string) {
   } catch (error) {
     console.error("Error removing student:", error);
     return { success: false };
+  }
+}
+
+export async function getActiveClasses(userId: string) {
+  try {
+    const now = new Date().toISOString();
+    console.log("Current date:", now);
+
+    const result = await db
+      .select()
+      .from(classes)
+      .where(
+        and(
+          sql`${classes.startDate}::timestamp <= ${now}::timestamp`,
+          sql`${classes.endDate}::timestamp >= ${now}::timestamp`
+        )
+      );
+
+    console.log("Query result:", result);
+
+    const mappedResult = result.map((cls) => ({
+      ...cls,
+      createdAt: cls.createdAt.toISOString(),
+      startDate: cls.startDate.toISOString(),
+      endDate: cls.endDate.toISOString(),
+    }));
+
+    console.log("Mapped result:", mappedResult);
+    return mappedResult;
+  } catch (error) {
+    console.error("Error fetching active classes:", error);
+    console.error(
+      "Error details:",
+      error instanceof Error ? error.message : error
+    );
+    return [];
   }
 }
