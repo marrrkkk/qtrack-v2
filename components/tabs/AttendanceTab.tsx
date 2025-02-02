@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, Users, BookOpen } from "lucide-react";
 import CreateAttendance from "@/components/CreateAttendance";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { getAttendanceDetails } from "@/actions/classes";
+import { getUsersByEmails } from "@/actions/user";
 
 interface SerializedClassData {
   id: number;
@@ -45,9 +48,37 @@ interface AttendanceTabProps {
 export function AttendanceTab({
   teacherData,
   classData,
-  latestAttendance,
+  latestAttendance: initialLatestAttendance,
   user,
 }: AttendanceTabProps) {
+  const [latestAttendance, setLatestAttendance] = useState(
+    initialLatestAttendance
+  );
+  const [userDetails, setUserDetails] = useState<
+    Record<string, { name: string }>
+  >({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (latestAttendance?.id) {
+        const latest = await getAttendanceDetails(
+          classData.id,
+          latestAttendance.id
+        );
+        if (latest?.attendanceList) {
+          const emails = latest.attendanceList.map((record) => record.email);
+          const users = await getUsersByEmails(emails);
+          setUserDetails(users);
+          setLatestAttendance(latest);
+        }
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 1000);
+    return () => clearInterval(interval);
+  }, [classData.id]);
+
   const presentCount =
     latestAttendance?.attendanceList?.filter((student) => student.present)
       .length || 0;
@@ -169,7 +200,9 @@ export function AttendanceTab({
                           record.present ? "bg-green-500/10" : "bg-red-500/10"
                         )}
                       >
-                        <span>{record.email}</span>
+                        <span>
+                          {userDetails[record.email]?.name || record.email}
+                        </span>
                         <Badge
                           variant={record.present ? "default" : "destructive"}
                         >
