@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,58 +10,66 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { UserPlus } from 'lucide-react'
-import { AddStudentToClass } from '@/actions/classes'
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { UserPlus } from "lucide-react";
+import { AddStudentToClass } from "@/actions/classes";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface AddStudentProps {
   classId: number;
-  currentUserEmail: string;
+  userId: string;
+  teacherId: string;
+  email: string;
 }
 
-export default function AddStudent({ classId, currentUserEmail }: AddStudentProps) {
-  const [email, setEmail] = useState('')
-  const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+export default function AddStudent({
+  classId,
+  userId,
+  teacherId,
+  email: userEmail,
+}: AddStudentProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setSuccessMessage('')
-    setErrorMessage('')
+    e.preventDefault();
+    setIsLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
 
     try {
-      await AddStudentToClass(email, classId, currentUserEmail)
-      setSuccessMessage('Student added successfully.')
-      setEmail('')
+      await AddStudentToClass(email, classId, userId);
+      setSuccessMessage("Student added successfully.");
       setTimeout(() => {
-        setIsOpen(false)
-        setSuccessMessage('')
-      }, 2000) // Close dialog after 2 seconds on success
+        setIsOpen(false);
+        setSuccessMessage("");
+      }, 2000); // Close dialog after 2 seconds on success
     } catch (err) {
       if (err instanceof Error) {
         if (err.message === "Student email not found in the database") {
-          setErrorMessage('Student email not found. Please check the email and try again.')
+          setErrorMessage(
+            "Student email not found. Please check the email and try again."
+          );
         } else if (err.message === "Student is already added to the class") {
-          setErrorMessage('This student is already in the class.')
+          setErrorMessage("This student is already in the class.");
         } else if (err.message === "You cannot add yourself as a student") {
-          setErrorMessage('You cannot add yourself as a student.')
+          setErrorMessage("You cannot add yourself as a student.");
         } else {
-          setErrorMessage('Failed to add student. Please try again.')
+          setErrorMessage("Failed to add student. Please try again.");
         }
       } else {
-        setErrorMessage('An unexpected error occurred. Please try again.')
+        setErrorMessage("An unexpected error occurred. Please try again.");
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -75,7 +83,8 @@ export default function AddStudent({ classId, currentUserEmail }: AddStudentProp
         <DialogHeader>
           <DialogTitle>Add Student</DialogTitle>
           <DialogDescription>
-            Enter the email address of the student you want to add to this class.
+            Enter the email address of the student you want to add to this
+            class.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -116,6 +125,5 @@ export default function AddStudent({ classId, currentUserEmail }: AddStudentProp
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

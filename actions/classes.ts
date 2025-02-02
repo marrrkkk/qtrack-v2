@@ -4,7 +4,7 @@ import { db, classes, attendance } from "@/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { getUsersByEmails } from '@/actions/user'
+import { getUsersByEmails } from "@/actions/user";
 
 export const AddNewClass = async (formdata: FormData) => {
   try {
@@ -300,7 +300,7 @@ export const getAttendanceDetails = async (
 };
 
 export async function getTodayClasses(userId: string) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
   const todayClasses = await db
     .select({
       id: classes.id,
@@ -317,13 +317,15 @@ export async function getTodayClasses(userId: string) {
         AND ${attendance.isActive} = true
         ORDER BY ${attendance.createdAt} DESC
         LIMIT 1
-      )`
+      )`,
     })
     .from(classes)
-    .where(and(
-      eq(classes.teacherId, userId),
-      sql`DATE(${classes.createdAt}) = ${today}`
-    ))
+    .where(
+      and(
+        eq(classes.teacherId, userId),
+        sql`DATE(${classes.createdAt}) = ${today}`
+      )
+    )
     .groupBy(classes.id);
 
   return todayClasses;
@@ -348,24 +350,48 @@ export async function getAllClasses(userId: string) {
 }
 
 export async function generateAttendanceCSV(attendanceDetails: any) {
-  const emails = attendanceDetails.attendanceList?.map((student: any) => student.email) || []
-  const userDetails = await getUsersByEmails(emails)
+  const emails =
+    attendanceDetails.attendanceList?.map((student: any) => student.email) ||
+    [];
+  const userDetails = await getUsersByEmails(emails);
 
-  const csvRows = [
-    ['Name', 'Email', 'Status', 'Date']
-  ]
+  const csvRows = [["Name", "Email", "Status", "Date"]];
 
   attendanceDetails.attendanceList?.forEach((student: any) => {
     csvRows.push([
-      userDetails[student.email]?.name || 'Unknown',
+      userDetails[student.email]?.name || "Unknown",
       student.email,
-      student.present ? 'Present' : 'Absent',
-      new Date(attendanceDetails.createdAt).toLocaleString()
-    ])
-  })
+      student.present ? "Present" : "Absent",
+      new Date(attendanceDetails.createdAt).toLocaleString(),
+    ]);
+  });
 
-  const csvContent = csvRows.map(row => row.join(',')).join('\n')
-  return csvContent
+  const csvContent = csvRows.map((row) => row.join(",")).join("\n");
+  return csvContent;
 }
 
+export async function removeStudent(classId: number, studentEmail: string) {
+  try {
+    const classData = await db
+      .select()
+      .from(classes)
+      .where(eq(classes.id, classId))
+      .limit(1);
 
+    if (!classData.length) return null;
+
+    const updatedStudents =
+      classData[0].students?.filter((email) => email !== studentEmail) || [];
+
+    await db
+      .update(classes)
+      .set({ students: updatedStudents })
+      .where(eq(classes.id, classId));
+
+    revalidatePath(`/dashboard/classes/${classId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing student:", error);
+    return { success: false };
+  }
+}

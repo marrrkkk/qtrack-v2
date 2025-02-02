@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Users } from "lucide-react";
+import { Users, X } from "lucide-react";
 import AddStudent from "@/components/AddStudent";
+import { Button } from "@/components/ui/button";
+import { removeStudent } from "@/actions/classes";
 
 interface SerializedClassData {
   id: number;
@@ -39,6 +41,16 @@ export function StudentsTab({
   user,
   isTeacher,
 }: StudentsTabProps) {
+  const handleRemoveStudent = async (email: string) => {
+    if (
+      confirm(
+        `Are you sure you want to remove ${studentNames[email]?.name || email}?`
+      )
+    ) {
+      await removeStudent(classData.id, email);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -79,6 +91,16 @@ export function StudentsTab({
                           </p>
                         </div>
                       </div>
+                      {isTeacher && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                          onClick={() => handleRemoveStudent(email)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   );
                 })
@@ -98,7 +120,9 @@ export function StudentsTab({
             <CardContent>
               <AddStudent
                 classId={classData.id}
-                currentUserEmail={user.emailAddresses[0]}
+                userId={user.id}
+                teacherId={classData.teacherId}
+                email={user.emailAddresses[0]}
               />
             </CardContent>
           </Card>
