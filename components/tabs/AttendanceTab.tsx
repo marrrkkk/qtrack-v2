@@ -60,24 +60,23 @@ export function AttendanceTab({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (latestAttendance?.id) {
-        const latest = await getAttendanceDetails(
-          classData.id,
-          latestAttendance.id
-        );
-        if (latest?.attendanceList) {
-          const emails = latest.attendanceList.map((record) => record.email);
-          const users = await getUsersByEmails(emails);
-          setUserDetails(users);
-          setLatestAttendance(latest);
-        }
+      // Get latest attendance even if no initial attendance exists
+      const latest = await getAttendanceDetails(
+        classData.id,
+        initialLatestAttendance?.id || 0
+      );
+      if (latest?.attendanceList) {
+        const emails = latest.attendanceList.map((record) => record.email);
+        const users = await getUsersByEmails(emails);
+        setUserDetails(users);
+        setLatestAttendance(latest);
       }
     };
 
-    fetchData();
+    fetchData(); // Initial fetch
     const interval = setInterval(fetchData, 1000);
     return () => clearInterval(interval);
-  }, [classData.id]);
+  }, [classData.id, initialLatestAttendance?.id]); // Add initialLatestAttendance dependency
 
   const presentCount =
     latestAttendance?.attendanceList?.filter((student) => student.present)
