@@ -398,36 +398,30 @@ export async function removeStudent(classId: number, studentEmail: string) {
 
 export async function getActiveClasses(userId: string) {
   try {
-    const now = new Date().toISOString();
-    console.log("Current date:", now);
-
+    // Get classes with active attendance
     const result = await db
-      .select()
+      .select({
+        class: classes,
+        attendance: attendance,
+      })
       .from(classes)
-      .where(
-        and(
-          sql`${classes.startDate}::timestamp <= ${now}::timestamp`,
-          sql`${classes.endDate}::timestamp >= ${now}::timestamp`
-        )
+      .innerJoin(
+        attendance,
+        and(eq(attendance.classId, classes.id), eq(attendance.isActive, true))
       );
 
-    console.log("Query result:", result);
+    console.log("Active classes result:", JSON.stringify(result, null, 2));
 
-    const mappedResult = result.map((cls) => ({
+    const mappedResult = result.map(({ class: cls }) => ({
       ...cls,
       createdAt: cls.createdAt.toISOString(),
       startDate: cls.startDate.toISOString(),
       endDate: cls.endDate.toISOString(),
     }));
 
-    console.log("Mapped result:", mappedResult);
     return mappedResult;
   } catch (error) {
     console.error("Error fetching active classes:", error);
-    console.error(
-      "Error details:",
-      error instanceof Error ? error.message : error
-    );
     return [];
   }
 }
